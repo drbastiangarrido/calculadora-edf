@@ -322,28 +322,12 @@
             <h2>Rubro 6: Dificultad del Desempeño (Máx 10,00 pts)</h2>
             <div class="rubro-score"><span id="score-r6">0.00</span></div>
         </div>
-        <p class="help-text" style="margin-bottom: 15px;">Ingresa los meses trabajados en cada categoría (Letra). El sistema aplica el tope de 62 meses automáticamente priorizando las categorías más altas.</p>
-        <div class="row">
-            <div class="col form-group">
-                <label>Letra A</label>
-                <input type="number" id="r6-a" min="0" value="0" oninput="calculate()" placeholder="Meses">
-            </div>
-            <div class="col form-group">
-                <label>Letra B</label>
-                <input type="number" id="r6-b" min="0" value="0" oninput="calculate()" placeholder="Meses">
-            </div>
-            <div class="col form-group">
-                <label>Letra C</label>
-                <input type="number" id="r6-c" min="0" value="0" oninput="calculate()" placeholder="Meses">
-            </div>
-            <div class="col form-group">
-                <label>Letra D</label>
-                <input type="number" id="r6-d" min="0" value="0" oninput="calculate()" placeholder="Meses">
-            </div>
-            <div class="col form-group">
-                <label>Letra E</label>
-                <input type="number" id="r6-e" min="0" value="0" oninput="calculate()" placeholder="Meses">
-            </div>
+        <p class="help-text" style="margin-bottom: 15px;">
+            Ingresa el "Nivel de Dificultad" de tu establecimiento. 
+        </p>
+        <div class="form-group">
+            <label>Puntaje de Dificultad (Según resolución corregida):</label>
+            <input type="number" step="0.01" id="r6-dificultad" min="0" value="0" oninput="calculate()" placeholder="Ej: 6.48">
         </div>
     </div>
 
@@ -461,21 +445,9 @@
         let r5_sar = (document.getElementById('r5-sar').checked && r5_m >= 6) ? 0.2 : 0;
         total += setUI('score-r5', (r5_m >= 6) ? Math.min(4.0, (getTableVal(T5_URGENCIA, r5_m) * r5_p) + r5_sar) : 0);
 
-        // R6: Dificultad (Max 10.0) - Lógica de tope inteligente priorizando categorías altas
-        let m_r6 = { a: getVal('r6-a'), b: getVal('r6-b'), c: getVal('r6-c'), d: getVal('r6-d'), e: getVal('r6-e') };
-        let monthsUsed = 0;
-        let r6_score = 0;
-        const remainingCapacity = () => 62 - monthsUsed;
-
-        // Iterar en orden A -> E para usar los meses disponibles en categorías que dan más puntos
-        ['a','b','c','d','e'].forEach(cat => {
-            if (remainingCapacity() > 0 && m_r6[cat] > 0) {
-                let monthsToCount = Math.min(m_r6[cat], remainingCapacity());
-                r6_score += monthsToCount * F6_FACTORS[cat];
-                monthsUsed += monthsToCount;
-            }
-        });
-        total += setUI('score-r6', Math.min(10.0, r6_score));
+        // R6: Dificultad (Max 10.0, puntaje fijo)
+        let r6_dificultad = getVal('r6-dificultad');
+        total += setUI('score-r6', Math.min(10.0, r6_dificultad));
 
         // R7: Investigación (Max 6.0)
         total += setUI('score-r7', Math.min(6.0, getVal('r7-total')));

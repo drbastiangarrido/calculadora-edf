@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora EDF - Dr. Bastian Garrido</title>
+    <style>
+        :root {
+            --primary: #004085; /* Azul ligeramente más oscuro y formal */
+            --primary-bg: #e7f1ff;
+            --bg-color: #f8f9fa;
+            --card-bg: rgba(255, 255, 255, 0.95); /* Ligeramente transparente para ver la marca de agua */
+            --border: #dee2e6;
+            --text-main: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 110px; /* Espacio extra para el banner final */
+            position: relative;
+        }
+
+        /* --- ESTILOS DE LA MARCA DE AGUA (WATERMARK) --- */
+        .watermark-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Colocado detrás de todo el contenido */
+            overflow: hidden;
+            pointer-events: none; /* Importante: permite hacer clic a través de ella */
+            opacity: 0.03; /* Muy tenue para no molestar */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: space-around;
+        }
+
+        .watermark-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #000;
+            transform: rotate(-25deg);
+            margin: 50px;
+            white-space: nowrap;
+        }
+        /* ---------------------------------------------- */
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative; /* Para asegurar que el contenido esté sobre la marca de agua base */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 { color: var(--primary); margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 1.1em; margin-top: 0; }
+
+        .rubro-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .rubro-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .rubro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .rubro-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+            color: var(--primary);
+        }
+
+        .rubro-score {
+            font-weight: bold;
+            font-size: 1.3em;
+            color: white;
+            background-color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label { margin-bottom: 7px; font-weight: 600; color: #444; }
+        
+        input[type="number"], select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1em;
+            background-color: white;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-bg);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            background-color: var(--primary-bg);
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .checkbox-group input { width: 20px; height: 20px; cursor: pointer; }
+        .checkbox-group label { margin-bottom: 0; cursor: pointer; }
+
+        small, .help-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .col { flex: 1; min-width: 120px; }
+
+        .total-banner {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.6em;
+            font-weight: bold;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        /* Responsividad básica */
+        @media (max-width: 600px) {
+            body { padding: 10px; padding-bottom: 100px; }
+            .rubro-card { padding: 15px; }
+            .rubro-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .total-banner { font-size: 1.3em; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="watermark-overlay">
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+    <div class="watermark-text">dr.bastiangarrido</div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>Calculadora Puntaje EDF</h1>
+        <p class="subtitle">Simulador basado en Res. Exenta N°415, 09/06/2025 - Valido para Proceso EDF ingreso 2026</p>
+        <p style="font-size: 0.9em; color: #888;">Desarrollado por: Dr. Bastian Garrido</p>
+    </header>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 1: Antigüedad (Máx 13,50 pts)</h2>
+            <div class="rubro-score"><span id="score-r1">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Meses de antigüedad (Rango evaluado: 26 a 62):</label>
+            <input type="number" id="r1-meses" min="0" max="100" value="0" oninput="calculate()">
+            <small>Menos de 26 meses = 0 pts. Más de 62 se topa automáticamente.</small>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="r1-presencialidad" onchange="calculate()">
+            <label for="r1-presencialidad">Cumple bonificación presencialidad (85%+ desempeño efectivo)</label>
+        </div>
+        <div class="form-group">
+            <label>Bono Desempeño Efectivo Continuo (Mismo establecimiento):</label>
+            <select id="r1-bono" onchange="calculate()">
+                <option value="0">No cumple / Menos de 38 meses</option>
+                <option value="0.25">Cumple 38 meses (+0.25 pts)</option>
+                <option value="0.75">Cumple 50 meses (+0.75 pts)</option>
+                <option value="1.25">Cumple 62 meses (+1.25 pts)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 2: Médico Único (Máx 4,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r2">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Meses continuos como Médico Único:</label>
+            <input type="number" id="r2-meses" min="0" value="0" oninput="calculate()">
+            <small>Requiere un mínimo de 6 meses continuos para puntuar.</small>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 3: Funciones de Gestión (Máx 8,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r3">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Meses totales en funciones de gestión:</label>
+            <input type="number" id="r3-meses" min="0" value="0" oninput="calculate()">
+            <small>Requiere un mínimo de 6 meses (continuos o no) para puntuar.</small>
+        </div>
+        <div class="form-group">
+            <label>Tipo de Jefatura / Ponderación (según Tabla Resumen):</label>
+            <select id="r3-porcentaje" onchange="calculate()">
+                <option value="1.00">100% (Director, Subdirector, Jefatura Depto, etc.)</option>
+                <option value="0.85">85% (Combinación Jefaturas 35%+50% o 50%+50%)</option>
+                <option value="0.75">75% (1 jefatura 50% + Asig. Art 45 APS)</option>
+                <option value="0.70">70% (2 jefaturas 35%)</option>
+                <option value="0.60">60% (1 jefatura 35% + Asig. Art 45 APS)</option>
+                <option value="0.50">50% (1 jefatura 50% sin Asig. Art 45)</option>
+                <option value="0.35">35% (1 jefatura 35% sin Asig. Art 45)</option>
+                <option value="0.25">25% (Encargado Programa con Asig. Art 45 Municipal)</option>
+                <option value="0">0% (Funciones sin jefatura reconocida)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 4: Posta Rural e Insularidad (Máx 8,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r4">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Meses de desempeño:</label>
+            <input type="number" id="r4-meses" min="0" value="0" oninput="calculate()">
+            <small>Requiere mínimo de 6 meses.</small>
+        </div>
+        <div class="form-group">
+            <label>Condición de desempeño (Ponderación):</label>
+            <select id="r4-porcentaje" onchange="calculate()">
+                <option value="1.00">100% (Insularidad, o cumple Frecuencia/Distancia Máxima)</option>
+                <option value="0.50">50% (Cumple Frecuencia/Distancia Media)</option>
+                <option value="0.25">25% (Desempeño en Posta sin cumplir condiciones anteriores)</option>
+            </select>
+            <small class="help-text">Ej 100%: Visita 1/semana a >20km, o 1/mes a >80km.</small>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 5: Trabajo en Urgencia (Máx 4,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r5">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Meses de desempeño (Mínimo 6):</label>
+            <input type="number" id="r5-meses" min="0" value="0" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label>Tipo de Establecimiento y Carga Horaria (Promedio mensual):</label>
+            <select id="r5-porcentaje" onchange="calculate()">
+                <option value="1.00">Hospital: > 80 hrs/mes (100%)</option>
+                <option value="0.95">Hospital: 70-79 hrs/mes (95%)</option>
+                <option value="0.90">Hospital: 60-69 hrs/mes (90%)</option>
+                <option value="0.85">Hospital: < 60 hrs/mes (85%)</option>
+                <option value="0.75">APS (SAPU/SAR/SUR): >= 40 hrs/mes (75%)</option>
+                <option value="0.60">APS: 30-39 hrs/mes (60%)</option>
+                <option value="0.45">APS: 20-29 hrs/mes (45%)</option>
+                <option value="0.30">APS: < 20 hrs/mes (30%)</option>
+            </select>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="r5-sar" onchange="calculate()">
+            <label for="r5-sar">Bonificación +0.2 pts por desempeño en SAR (Mín. 6 meses)</label>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 6: Dificultad del Desempeño (Máx 10,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r6">0.00</span></div>
+        </div>
+        <p class="help-text" style="margin-bottom: 15px;">Ingresa los meses trabajados en cada categoría (Letra). El sistema aplica el tope de 62 meses automáticamente priorizando las categorías más altas.</p>
+        <div class="row">
+            <div class="col form-group">
+                <label>Letra A</label>
+                <input type="number" id="r6-a" min="0" value="0" oninput="calculate()" placeholder="Meses">
+            </div>
+            <div class="col form-group">
+                <label>Letra B</label>
+                <input type="number" id="r6-b" min="0" value="0" oninput="calculate()" placeholder="Meses">
+            </div>
+            <div class="col form-group">
+                <label>Letra C</label>
+                <input type="number" id="r6-c" min="0" value="0" oninput="calculate()" placeholder="Meses">
+            </div>
+            <div class="col form-group">
+                <label>Letra D</label>
+                <input type="number" id="r6-d" min="0" value="0" oninput="calculate()" placeholder="Meses">
+            </div>
+            <div class="col form-group">
+                <label>Letra E</label>
+                <input type="number" id="r6-e" min="0" value="0" oninput="calculate()" placeholder="Meses">
+            </div>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 7: Investigación (Máx 6,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r7">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Puntaje total acumulado (Cálculo manual según Tabla N°7):</label>
+            <input type="number" step="0.01" id="r7-total" min="0" value="0" oninput="calculate()">
+            <div class="help-text">
+                Publicado (1.5), Presentado (1.0), Aceptado Pub (0.75), Aceptado Pres (0.5).<br>
+                Puntaje doble si temática es Salud Familiar.
+            </div>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 8: Capacitación (Máx 7,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r8">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Total Horas Cronológicas de Cursos:</label>
+            <input type="number" id="r8-horas" min="0" value="0" oninput="calculate()">
+            <small>El sistema convierte a pedagógicas (hrs / 0.75). Mínimo 80 pedagógicas para puntuar.</small>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 9: Comunidad y Labor Asistencial (Máx 6,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r9">0.00</span></div>
+        </div>
+        <div class="form-group">
+            <label>Puntaje total acumulado (Cálculo manual subrubros A, B, C):</label>
+            <input type="number" step="0.001" id="r9-total" min="0" value="0" oninput="calculate()">
+            <small>Incluye Proyectos de Intervención, Trabajo con Grupos y Actividades de Difusión.</small>
+        </div>
+    </div>
+
+    <div class="rubro-card">
+        <div class="rubro-header">
+            <h2>Rubro 10: Actividades Docentes (Máx 4,00 pts)</h2>
+            <div class="rubro-score"><span id="score-r10">0.00</span></div>
+        </div>
+        <div class="row">
+            <div class="col form-group">
+                <label>Meses Docencia Institucional:</label>
+                <input type="number" id="r10-inst" min="0" value="0" oninput="calculate()" placeholder="0.1 pts/mes">
+            </div>
+            <div class="col form-group">
+                <label>Meses Docencia Universitaria:</label>
+                <input type="number" id="r10-univ" min="0" value="0" oninput="calculate()" placeholder="0.05 pts/mes">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="total-banner">
+    PUNTAJE TOTAL ESTIMADO: <span id="total-final">0.00</span> / 70.50
+</div>
+
+<script>
+    // Tablas de valores fijos extraídas rigurosamente del PDF Instructivo MGZ
+    const T1_ANTIGUEDAD = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.45,0.68,0.90,1.13,1.36,1.58,1.81,2.03,2.26,2.49,2.71,2.94,3.25,3.57,3.89,4.20,4.52,4.84,5.15,5.47,5.79,6.10,6.42,6.73,7.05,7.44,7.83,8.23,8.62,9.01,9.40,9.79,10.18,10.58,10.97,11.36,11.75];
+    const T2_MEDICO_UNICO = [0,0,0,0,0,0,0.39,0.45,0.52,0.58,0.65,0.71,0.77,0.84,0.90,0.97,1.03,1.10,1.16,1.23,1.29,1.35,1.42,1.48,1.55,1.61,1.68,1.74,1.81,1.87,1.94,2.00,2.06,2.13,2.19,2.26,2.32,2.39,2.45,2.52,2.58,2.65,2.71,2.77,2.84,2.90,2.97,3.03,3.10,3.16,3.23,3.29,3.35,3.42,3.48,3.55,3.61,3.68,3.74,3.81,3.87,3.94,4.00];
+    const T4_POSTA = [0,0,0,0,0,0,0.774,0.903,1.032,1.161,1.290,1.419,1.548,1.677,1.806,1.935,2.065,2.194,2.323,2.452,2.581,2.710,2.839,2.968,3.097,3.226,3.355,3.484,3.613,3.742,3.871,4.000,4.129,4.258,4.387,4.516,4.645,4.774,4.903,5.032,5.161,5.290,5.419,5.548,5.677,5.806,5.935,6.065,6.194,6.323,6.452,6.581,6.710,6.839,6.968,7.097,7.226,7.355,7.484,7.613,7.742,7.871,8.000];
+    const T5_URGENCIA = [0,0,0,0,0,0,0.387,0.452,0.516,0.581,0.645,0.710,0.774,0.839,0.903,0.968,1.032,1.097,1.161,1.226,1.290,1.355,1.419,1.484,1.548,1.613,1.677,1.742,1.806,1.871,1.935,2.000,2.065,2.129,2.194,2.258,2.323,2.387,2.452,2.516,2.581,2.645,2.710,2.774,2.839,2.903,2.968,3.032,3.097,3.161,3.226,3.290,3.355,3.419,3.484,3.548,3.613,3.677,3.742,3.806,3.871,3.935,4.000];
+
+    // Factores mensuales Rubro 6 (Topes / 62 meses)
+    const F6_FACTORS = { a: 0.16129, b: 0.14516, c: 0.12903, d: 0.11290, e: 0.09677 };
+
+    // Funciones de utilidad
+    const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+    const setUI = (id, val) => { document.getElementById(id).innerText = val.toFixed(2); return val; };
+    
+    // Obtener valor de tabla con tope de 62 meses
+    const getTableVal = (table, months) => {
+        let m = Math.floor(months);
+        if (m < 0) return 0;
+        if (m > 62) m = 62;
+        return table[m] || 0;
+    };
+
+    function calculate() {
+        let total = 0;
+
+        // R1: Antigüedad (Max 13.5)
+        let r1_m = getVal('r1-meses');
+        let r1_base = getTableVal(T1_ANTIGUEDAD, r1_m);
+        let r1_bono = parseFloat(document.getElementById('r1-bono').value);
+        let r1_pres = document.getElementById('r1-presencialidad').checked ? 0.5 : 0;
+        total += setUI('score-r1', Math.min(13.5, r1_base + r1_bono + r1_pres));
+
+        // R2: Médico Único (Max 4.0)
+        let r2_m = getVal('r2-meses');
+        total += setUI('score-r2', (r2_m >= 6) ? Math.min(4.0, getTableVal(T2_MEDICO_UNICO, r2_m)) : 0);
+
+        // R3: Gestión (Max 8.0)
+        let r3_m = getVal('r3-meses');
+        let r3_p = parseFloat(document.getElementById('r3-porcentaje').value);
+        total += setUI('score-r3', (r3_m >= 6) ? Math.min(8.0, (r3_m * 0.13) * r3_p) : 0);
+
+        // R4: Posta (Max 8.0)
+        let r4_m = getVal('r4-meses');
+        let r4_p = parseFloat(document.getElementById('r4-porcentaje').value);
+        total += setUI('score-r4', (r4_m >= 6) ? Math.min(8.0, getTableVal(T4_POSTA, r4_m) * r4_p) : 0);
+
+        // R5: Urgencia (Max 4.0)
+        let r5_m = getVal('r5-meses');
+        let r5_p = parseFloat(document.getElementById('r5-porcentaje').value);
+        let r5_sar = (document.getElementById('r5-sar').checked && r5_m >= 6) ? 0.2 : 0;
+        total += setUI('score-r5', (r5_m >= 6) ? Math.min(4.0, (getTableVal(T5_URGENCIA, r5_m) * r5_p) + r5_sar) : 0);
+
+        // R6: Dificultad (Max 10.0) - Lógica de tope inteligente priorizando categorías altas
+        let m_r6 = { a: getVal('r6-a'), b: getVal('r6-b'), c: getVal('r6-c'), d: getVal('r6-d'), e: getVal('r6-e') };
+        let monthsUsed = 0;
+        let r6_score = 0;
+        const remainingCapacity = () => 62 - monthsUsed;
+
+        // Iterar en orden A -> E para usar los meses disponibles en categorías que dan más puntos
+        ['a','b','c','d','e'].forEach(cat => {
+            if (remainingCapacity() > 0 && m_r6[cat] > 0) {
+                let monthsToCount = Math.min(m_r6[cat], remainingCapacity());
+                r6_score += monthsToCount * F6_FACTORS[cat];
+                monthsUsed += monthsToCount;
+            }
+        });
+        total += setUI('score-r6', Math.min(10.0, r6_score));
+
+        // R7: Investigación (Max 6.0)
+        total += setUI('score-r7', Math.min(6.0, getVal('r7-total')));
+
+        // R8: Capacitación (Max 7.0)
+        let r8_peda = getVal('r8-horas') / 0.75; // Conversión crono a pedagógicas
+        let r8_s = 0;
+        if (r8_peda >= 80) {
+            // Regla de tres simple basada en la tabla proporcional del PDF
+            r8_s = Math.min(7.0, (r8_peda * 7.0) / 800); 
+        }
+        total += setUI('score-r8', r8_s);
+
+        // R9: Comunidad (Max 6.0)
+        total += setUI('score-r9', Math.min(6.0, getVal('r9-total')));
+
+        // R10: Docencia (Max 4.0)
+        total += setUI('score-r10', Math.min(4.0, (getVal('r10-inst') * 0.1) + (getVal('r10-univ') * 0.05)));
+
+        // TOTAL FINAL
+        document.getElementById('total-final').innerText = total.toFixed(2);
+    }
+    
+    // Ejecutar cálculo inicial
+    calculate();
+</script>
+</body>
+</html>
